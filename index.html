@@ -7,7 +7,9 @@
 
 <body>
     <script>
-        var postFields = ["id", "created_time", "message", "place", "link"];
+        var postFields = ["id", "created_time", "message", "Place name", "city", "country",
+            "latitude", "longitude", "link"
+        ];
         var commentFields = ["post_id", "comment_id", "From", "created_time", "likes_count"];
         var likeFields = ["post_id", "like_id", "From"];
 
@@ -53,6 +55,7 @@
                     "business_management, pages_messaging," +
                     "pages_messaging_phone_number"
             });
+            $("#form").show();
         }
 
         function generateCSVs(data, fields, filename) {
@@ -76,9 +79,14 @@
         }
 
         function processPost(post) {
-            postsCSV.push([post.id, post.created_time, post.message, post.place,
-                post.link
-            ]);
+            row = [post.id, post.created_time, post.message, post.link];
+            if (typeof post.place !== "undefined") {
+                row_location = [post.place.name, post.place.location.city,
+                    post.place.location.country, post.place.location.latitude,
+                    post.place.location.longitude];
+                $.merge(row, row_location);
+            }
+            postsCSV.push(row);
             if (typeof post.comments !== 'undefined') {
                 post.comments.data.forEach(function(comment) {
                     commentsCSV.push([post.id, comment.id, comment.from.name,
@@ -136,18 +144,19 @@
         }
     </script>
     This page contains javascript code to download Facebook posts and output it in CSV format.
-    <br>
-    The script also downloads all the comments and the likes of these posts.
+    <br> The script also downloads all the comments and the likes of these posts.
     <br><br>
+    First login to your account:
     <button onclick="facebookLogin()">Login with Facebook</button>
-    <br><br>
-    Please enter the number of posts to collect:
-    <input type="text" id="postCnt" value="500">
-    <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
-    <div id="status"></div>
-    <div id="result"></div>
-    <br>
-    <div id="csv"></div>
+    <div id="form" style="display:none">
+        <br><br> Please enter the number of posts to collect:
+        <input type="text" id="postCnt" value="500">
+        <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
+        <div id="status"></div>
+        <div id="result"></div>
+        <br>
+        <div id="csv"></div>
+    </div>
 </body>
 
 </html>
