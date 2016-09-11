@@ -7,8 +7,8 @@
 
 <body>
     <script>
-        var postFields = ["id", "created_time", "message", "Place name", "city", "country",
-            "latitude", "longitude", "link"
+        var postFields = ["id", "created_time", "message", "link",
+            "Place name", "city", "country", "latitude", "longitude",
         ];
         var commentFields = ["post_id", "comment_id", "From", "created_time", "likes_count"];
         var likeFields = ["post_id", "like_id", "From"];
@@ -79,14 +79,14 @@
         }
 
         function processPost(post) {
-            row = [post.id, post.created_time, post.message, post.link];
+            var row = [post.id, post.created_time, post.message, post.link];
+            var row_location = ["", "", "", "", ""];
             if (typeof post.place !== "undefined") {
                 row_location = [post.place.name, post.place.location.city,
                     post.place.location.country, post.place.location.latitude,
                     post.place.location.longitude];
-                $.merge(row, row_location);
             }
-            postsCSV.push(row);
+            postsCSV.push($.merge(row, row_location));
             if (typeof post.comments !== 'undefined') {
                 post.comments.data.forEach(function(comment) {
                     commentsCSV.push([post.id, comment.id, comment.from.name,
