@@ -78,11 +78,14 @@
         }
 
         function processPost(post) {
-            postsCSV.push([post.id, post.created_time, post.message, post.place.name,
-                post.place.location.city, post.place.location.country,
-                post.place.location.latitude, post.place.location.longitude,
-                post.link
-            ]);
+            row = [post.id, post.created_time, post.message, post.link];
+            if (typeof post.place !== "undefined") {
+                row_location = [post.place.name, post.place.location.city,
+                    post.place.location.country, post.place.location.latitude,
+                    post.place.location.longitude];
+                $.merge(row, row_location);
+            }
+            postsCSV.push(row);
             if (typeof post.comments !== 'undefined') {
                 post.comments.data.forEach(function(comment) {
                     commentsCSV.push([post.id, comment.id, comment.from.name,
