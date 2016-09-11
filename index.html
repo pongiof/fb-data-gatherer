@@ -55,6 +55,7 @@
                     "business_management, pages_messaging," +
                     "pages_messaging_phone_number"
             });
+            $("#form").show();
         }
 
         function generateCSVs(data, fields, filename) {
@@ -145,14 +146,17 @@
     This page contains javascript code to download Facebook posts and output it in CSV format.
     <br> The script also downloads all the comments and the likes of these posts.
     <br><br>
+    First login to your account:
     <button onclick="facebookLogin()">Login with Facebook</button>
-    <br><br> Please enter the number of posts to collect:
-    <input type="text" id="postCnt" value="500">
-    <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
-    <div id="status"></div>
-    <div id="result"></div>
-    <br>
-    <div id="csv"></div>
+    <div id="form" style="display:none">
+        <br><br> Please enter the number of posts to collect:
+        <input type="text" id="postCnt" value="500">
+        <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
+        <div id="status"></div>
+        <div id="result"></div>
+        <br>
+        <div id="csv"></div>
+    </div>
 </body>
 
 </html>
