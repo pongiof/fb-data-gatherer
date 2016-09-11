@@ -1,0 +1,153 @@
+<html>
+
+<head>
+    <title>Facebook Data Gather</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <script>
+        var postFields = ["id", "created_time", "message", "place", "link"];
+        var commentFields = ["post_id", "comment_id", "From", "created_time", "likes_count"];
+        var likeFields = ["post_id", "like_id", "From"];
+
+        var commentsCSV = [];
+        var likesCSV = [];
+        var postsCSV = [];
+
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '940021842754201',
+                xfbml: true,
+                version: 'v2.7'
+            })
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        function facebookLogin() {
+            FB.login(function() {}, {
+                scope: "public_profile,user_friends,email,user_about_me," +
+                    "user_actions.books,user_actions.fitness," +
+                    "user_actions.music,user_actions.news,user_actions.video," +
+                    "user_birthday,user_education_history,user_events," +
+                    "user_games_activity,user_hometown,user_likes," +
+                    "user_location, user_managed_groups, user_photos," +
+                    "user_posts, user_relationships, " +
+                    "user_relationship_details, user_religion_politics, " +
+                    "user_tagged_places, user_videos, user_website," +
+                    "user_work_history, read_custom_friendlists," +
+                    "read_insights, read_audience_network_insights," +
+                    "read_page_mailboxes, manage_pages, publish_actions," +
+                    "rsvp_event, pages_show_list, pages_manage_cta," +
+                    "pages_manage_instant_articles, ads_read, ads_management," +
+                    "business_management, pages_messaging," +
+                    "pages_messaging_phone_number"
+            });
+        }
+
+        function generateCSVs(data, fields, filename) {
+            colDelim = '","';
+            rowDelim = '"\r\n"';
+
+            csv = fields.join(colDelim);
+
+            data.forEach(function(row) {
+                csv += rowDelim + row.join(colDelim);
+            });
+
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+            return $('<a>', {
+                'text': filename,
+                'download': filename,
+                'href': csvData,
+                'target': '_blank'
+            });
+        }
+
+        function processPost(post) {
+            postsCSV.push([post.id, post.created_time, post.message, post.place,
+                post.link
+            ]);
+            if (typeof post.comments !== 'undefined') {
+                post.comments.data.forEach(function(comment) {
+                    commentsCSV.push([post.id, comment.id, comment.from.name,
+                        comment.created_time, comment.like_count
+                    ]);
+                });
+            }
+            if (typeof post.likes !== 'undefined') {
+                post.likes.data.forEach(function(like) {
+                    likesCSV.push([post.id, like.id, like.name])
+                });
+            }
+        }
+
+        function collectData(postLimit, postReqLimit) {
+
+            var data = []
+            var postCnt = 0
+
+            function processResponse(response) {
+                postCnt += response.data.length;
+                $("#status").append("<br>New data received...loaded " + postCnt + " posts.");
+                $.merge(data, response.data)
+                if (typeof response.paging !== 'undefined' &&
+                    typeof response.paging.next !== 'undefined' &&
+                    postCnt < postLimit) {
+                    $.ajax({
+                        dataType: "json",
+                        url: response.paging.next,
+                        success: processResponse
+                    });
+                } else {
+                    $("#status").append("<br> Done.");
+                    $("#status").append("<br> Generating...");
+                    generateCSVs(postsCSV, postFields, "posts.csv").appendTo("#csv");
+                    $("#csv").append("<br>");
+                    generateCSVs(commentsCSV, commentFields, "comments.csv").appendTo("#csv");
+                    $("#csv").append("<br>");
+                    generateCSVs(likesCSV, likeFields, "likes.csv").appendTo("#csv");
+                }
+                response.data.forEach(processPost);
+            }
+
+            $("#csv").html("");
+            $("#status").html("<br>Loading " + postLimit + " posts...");
+            FB.api(
+                '/me/feed',
+                'GET', {
+                    "fields": "comments{id,created_time,message,from," +
+                        "like_count,user_likes},message,likes{name}," +
+                        "created_time,place,link",
+                    "limit": postReqLimit.toString(),
+                },
+                processResponse);
+        }
+    </script>
+    This page contains javascript code to download Facebook posts and output it in CSV format.
+    <br>
+    The script also downloads all the comments and the likes of these posts.
+    <br><br>
+    <button onclick="facebookLogin()">Login with Facebook</button>
+    <br><br>
+    Please enter the number of posts to collect:
+    <input type="text" id="postCnt" value="500">
+    <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
+    <div id="status"></div>
+    <div id="result"></div>
+    <br>
+    <div id="csv"></div>
+</body>
+
+</html>
