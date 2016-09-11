@@ -7,7 +7,9 @@
 
 <body>
     <script>
-        var postFields = ["id", "created_time", "message", "place", "link"];
+        var postFields = ["id", "created_time", "message", "Place name", "city", "country",
+            "latitude", "longitude", "link"
+        ];
         var commentFields = ["post_id", "comment_id", "From", "created_time", "likes_count"];
         var likeFields = ["post_id", "like_id", "From"];
 
@@ -76,7 +78,9 @@
         }
 
         function processPost(post) {
-            postsCSV.push([post.id, post.created_time, post.message, post.place,
+            postsCSV.push([post.id, post.created_time, post.message, post.place.name,
+                post.place.location.city, post.place.location.country,
+                post.place.location.latitude, post.place.location.longitude,
                 post.link
             ]);
             if (typeof post.comments !== 'undefined') {
@@ -136,12 +140,10 @@
         }
     </script>
     This page contains javascript code to download Facebook posts and output it in CSV format.
-    <br>
-    The script also downloads all the comments and the likes of these posts.
+    <br> The script also downloads all the comments and the likes of these posts.
     <br><br>
     <button onclick="facebookLogin()">Login with Facebook</button>
-    <br><br>
-    Please enter the number of posts to collect:
+    <br><br> Please enter the number of posts to collect:
     <input type="text" id="postCnt" value="500">
     <button onclick="collectData($('#postCnt').val(), 1000)">Start!</button>
     <div id="status"></div>
